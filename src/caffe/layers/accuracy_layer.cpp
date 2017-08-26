@@ -81,9 +81,15 @@ void AccuracyLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       // check if true label is in top k predictions
       for (int k = 0; k < top_k_; k++) {
         if (bottom_data_vector[k].second == label_value) {
+          //预测正确
           ++accuracy;
           if (top.size() > 1) ++top[1]->mutable_cpu_data()[label_value];
           break;
+        }
+        else{
+          //预测错误
+          // index为batch中的图片序号(0~99)，label为标签值，output为预测值
+          LOG(INFO) << "[Predict Error] sample index in batch:" << i << " label:" << label_value << " output:" << bottom_data_vector[k].second;
         }
       }
       ++count;
