@@ -80,12 +80,18 @@ def get_field_indices(x_axis_field, y_axis_field):
 def load_data(data_file, field_idx0, field_idx1):
     data = [[], []]
     with open(data_file, 'r') as f:
+        last_lr=0.0
         for line in f:
             line = line.strip()
             if line[0] != '#':
+                #print "line:",line," idx0:",field_idx0," idx1:",field_idx1
                 fields = line.split()
                 data[0].append(float(fields[field_idx0].strip()))
-                data[1].append(float(fields[field_idx1].strip()))
+                try:
+                    data[1].append(float(fields[field_idx1].strip()))
+                except Exception as e:
+                    data[1].append(last_lr)
+                last_lr=data[1][-1]
     return data
 
 def random_marker():
@@ -114,6 +120,7 @@ def plot_chart(chart_type, path_to_png, path_to_log_list):
         data_file = get_data_file(chart_type, path_to_log)
         x_axis_field, y_axis_field = get_field_descriptions(chart_type)
         x, y = get_field_indices(x_axis_field, y_axis_field)
+        #print "x=",x," y=",y,"\n"
         data = load_data(data_file, x, y)
         ## TODO: more systematic color cycle for lines
         color = [random.random(), random.random(), random.random()]
