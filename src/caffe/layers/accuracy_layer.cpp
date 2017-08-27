@@ -87,9 +87,9 @@ void AccuracyLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           break;
         }
         else{
-          //预测错误
+          //预测错误,需要时再打开
           // index为batch中的图片序号(0~99)，label为标签值，output为预测值
-          LOG(INFO) << "[Predict Error] sample index in batch:" << i << " label:" << label_value << " output:" << bottom_data_vector[k].second;
+          //LOG(INFO) << "[Predict Error] sample index in batch:" << i << " label:" << label_value << " output:" << bottom_data_vector[k].second;
         }
       }
       ++count;
