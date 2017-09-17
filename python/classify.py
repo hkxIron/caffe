@@ -128,6 +128,7 @@ def main(argv):
     start = time.time()
     predictions = classifier.predict(inputs, not args.center_only)
     print("Done in %.2f s." % (time.time() - start))
+    print "predictions:",predictions
 
     # Save
     print("Saving results into %s" % args.output_file)

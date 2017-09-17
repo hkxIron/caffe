@@ -6,11 +6,12 @@ cd "$DIR"
 
 echo "Downloading..."
 
-wget --no-check-certificate http://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz
+#wget --no-check-certificate http://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz
 
 echo "Unzipping..."
 
-tar -xf cifar-10-binary.tar.gz && rm -f cifar-10-binary.tar.gz
+tar -xf ~/windata/cifar-10/cifar-10-binary.tar.gz && rm -f cifar-10-binary.tar.gz
+#tar -xf cifar-10-binary.tar.gz && rm -f cifar-10-binary.tar.gz
 mv cifar-10-batches-bin/* . && rm -rf cifar-10-batches-bin
 
 # Creation is split out because leveldb sometimes causes segfault
