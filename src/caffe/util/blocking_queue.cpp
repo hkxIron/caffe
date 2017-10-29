@@ -7,27 +7,25 @@
 
 namespace caffe {
 
-template<typename T>
+template <typename T>
 class BlockingQueue<T>::sync {
  public:
   mutable boost::mutex mutex_;
   boost::condition_variable condition_;
 };
 
-template<typename T>
-BlockingQueue<T>::BlockingQueue()
-    : sync_(new sync()) {
-}
+template <typename T>
+BlockingQueue<T>::BlockingQueue() : sync_(new sync()) {}
 
-template<typename T>
+template <typename T>
 void BlockingQueue<T>::push(const T& t) {
-  boost::mutex::scoped_lock lock(sync_->mutex_);
+  boost::mutex::scoped_lock lock(sync_->mutex_);  // 不区分是读锁还是写锁
   queue_.push(t);
   lock.unlock();
-  sync_->condition_.notify_one();
+  sync_->condition_.notify_one();  // 启用一个线程
 }
 
-template<typename T>
+template <typename T>
 bool BlockingQueue<T>::try_pop(T* t) {
   boost::mutex::scoped_lock lock(sync_->mutex_);
 
@@ -40,15 +38,15 @@ bool BlockingQueue<T>::try_pop(T* t) {
   return true;
 }
 
-template<typename T>
+template <typename T>
 T BlockingQueue<T>::pop(const string& log_on_wait) {
   boost::mutex::scoped_lock lock(sync_->mutex_);
 
   while (queue_.empty()) {
     if (!log_on_wait.empty()) {
-      LOG_EVERY_N(INFO, 1000)<< log_on_wait;
+      LOG_EVERY_N(INFO, 1000) << log_on_wait;
     }
-    sync_->condition_.wait(lock);
+    sync_->condition_.wait(lock);  // 等待lock解锁（并无超时机制）
   }
 
   T t = queue_.front();
@@ -56,7 +54,7 @@ T BlockingQueue<T>::pop(const string& log_on_wait) {
   return t;
 }
 
-template<typename T>
+template <typename T>
 bool BlockingQueue<T>::try_peek(T* t) {
   boost::mutex::scoped_lock lock(sync_->mutex_);
 
@@ -68,7 +66,7 @@ bool BlockingQueue<T>::try_peek(T* t) {
   return true;
 }
 
-template<typename T>
+template <typename T>
 T BlockingQueue<T>::peek() {
   boost::mutex::scoped_lock lock(sync_->mutex_);
 
@@ -79,7 +77,7 @@ T BlockingQueue<T>::peek() {
   return queue_.front();
 }
 
-template<typename T>
+template <typename T>
 size_t BlockingQueue<T>::size() const {
   boost::mutex::scoped_lock lock(sync_->mutex_);
   return queue_.size();
