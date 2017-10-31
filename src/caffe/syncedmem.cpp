@@ -4,8 +4,13 @@
 
 namespace caffe {
 SyncedMemory::SyncedMemory()
-  : cpu_ptr_(NULL), gpu_ptr_(NULL), size_(0), head_(UNINITIALIZED),
-    own_cpu_data_(false), cpu_malloc_use_cuda_(false), own_gpu_data_(false) {
+    : cpu_ptr_(NULL),
+      gpu_ptr_(NULL),
+      size_(0),
+      head_(UNINITIALIZED),
+      own_cpu_data_(false),
+      cpu_malloc_use_cuda_(false),
+      own_gpu_data_(false) {
 #ifndef CPU_ONLY
 #ifdef DEBUG
   CUDA_CHECK(cudaGetDevice(&device_));
@@ -14,8 +19,13 @@ SyncedMemory::SyncedMemory()
 }
 
 SyncedMemory::SyncedMemory(size_t size)
-  : cpu_ptr_(NULL), gpu_ptr_(NULL), size_(size), head_(UNINITIALIZED),
-    own_cpu_data_(false), cpu_malloc_use_cuda_(false), own_gpu_data_(false) {
+    : cpu_ptr_(NULL),
+      gpu_ptr_(NULL),
+      size_(size),
+      head_(UNINITIALIZED),
+      own_cpu_data_(false),
+      cpu_malloc_use_cuda_(false),
+      own_gpu_data_(false) {
 #ifndef CPU_ONLY
 #ifdef DEBUG
   CUDA_CHECK(cudaGetDevice(&device_));
@@ -39,27 +49,28 @@ SyncedMemory::~SyncedMemory() {
 inline void SyncedMemory::to_cpu() {
   check_device();
   switch (head_) {
-  case UNINITIALIZED:
-    CaffeMallocHost(&cpu_ptr_, size_, &cpu_malloc_use_cuda_);
-    caffe_memset(size_, 0, cpu_ptr_);
-    head_ = HEAD_AT_CPU;
-    own_cpu_data_ = true;
-    break;
-  case HEAD_AT_GPU:
-#ifndef CPU_ONLY
-    if (cpu_ptr_ == NULL) {
-      CaffeMallocHost(&cpu_ptr_, size_, &cpu_malloc_use_cuda_);
+    case UNINITIALIZED:  // 若未初始化，进行内存分配
+      CaffeMallocHost(&cpu_ptr_, size_,
+                      &cpu_malloc_use_cuda_);  // 调用 malloc() 函数分配内存
+      caffe_memset(size_, 0, cpu_ptr_);  // 将cpu_ptr_的连续内存的值全置为0
+      head_ = HEAD_AT_CPU;
       own_cpu_data_ = true;
-    }
-    caffe_gpu_memcpy(size_, gpu_ptr_, cpu_ptr_);
-    head_ = SYNCED;
+      break;
+    case HEAD_AT_GPU:
+#ifndef CPU_ONLY  // GPU
+      if (cpu_ptr_ == NULL) {
+        CaffeMallocHost(&cpu_ptr_, size_, &cpu_malloc_use_cuda_);
+        own_cpu_data_ = true;
+      }
+      caffe_gpu_memcpy(size_, gpu_ptr_, cpu_ptr_);
+      head_ = SYNCED;
 #else
-    NO_GPU;
+      NO_GPU;
 #endif
-    break;
-  case HEAD_AT_CPU:
-  case SYNCED:
-    break;
+      break;
+    case HEAD_AT_CPU:
+    case SYNCED:
+      break;
   }
 }
 
@@ -67,23 +78,23 @@ inline void SyncedMemory::to_gpu() {
   check_device();
 #ifndef CPU_ONLY
   switch (head_) {
-  case UNINITIALIZED:
-    CUDA_CHECK(cudaMalloc(&gpu_ptr_, size_));
-    caffe_gpu_memset(size_, 0, gpu_ptr_);
-    head_ = HEAD_AT_GPU;
-    own_gpu_data_ = true;
-    break;
-  case HEAD_AT_CPU:
-    if (gpu_ptr_ == NULL) {
+    case UNINITIALIZED:
       CUDA_CHECK(cudaMalloc(&gpu_ptr_, size_));
+      caffe_gpu_memset(size_, 0, gpu_ptr_);
+      head_ = HEAD_AT_GPU;
       own_gpu_data_ = true;
-    }
-    caffe_gpu_memcpy(size_, cpu_ptr_, gpu_ptr_);
-    head_ = SYNCED;
-    break;
-  case HEAD_AT_GPU:
-  case SYNCED:
-    break;
+      break;
+    case HEAD_AT_CPU:
+      if (gpu_ptr_ == NULL) {
+        CUDA_CHECK(cudaMalloc(&gpu_ptr_, size_));
+        own_gpu_data_ = true;
+      }
+      caffe_gpu_memcpy(size_, cpu_ptr_, gpu_ptr_);
+      head_ = SYNCED;
+      break;
+    case HEAD_AT_GPU:
+    case SYNCED:
+      break;
   }
 #else
   NO_GPU;
@@ -183,4 +194,3 @@ void SyncedMemory::check_device() {
 }
 
 }  // namespace caffe
-

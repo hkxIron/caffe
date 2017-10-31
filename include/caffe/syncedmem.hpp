@@ -4,7 +4,7 @@
 #include <cstdlib>
 
 #ifdef USE_MKL
-  #include "mkl.h"
+#include "mkl.h"
 #endif
 
 #include "caffe/common.hpp"
@@ -17,7 +17,7 @@ namespace caffe {
 // but might be more significant for parallel training. Most importantly,
 // it improved stability for large models on many GPUs.
 inline void CaffeMallocHost(void** ptr, size_t size, bool* use_cuda) {
-#ifndef CPU_ONLY
+#ifndef CPU_ONLY  // GPU
   if (Caffe::mode() == Caffe::GPU) {
     CUDA_CHECK(cudaMallocHost(ptr, size));
     *use_cuda = true;
@@ -25,9 +25,9 @@ inline void CaffeMallocHost(void** ptr, size_t size, bool* use_cuda) {
   }
 #endif
 #ifdef USE_MKL
-  *ptr = mkl_malloc(size ? size:1, 64);
+  *ptr = mkl_malloc(size ? size : 1, 64);
 #else
-  *ptr = malloc(size);
+  *ptr = malloc(size);  //就是普通的malloc
 #endif
   *use_cuda = false;
   CHECK(*ptr) << "host allocation of size " << size << " failed";
@@ -46,7 +46,6 @@ inline void CaffeFreeHost(void* ptr, bool use_cuda) {
   free(ptr);
 #endif
 }
-
 
 /**
  * @brief Manages memory allocation and synchronization between the host (CPU)
