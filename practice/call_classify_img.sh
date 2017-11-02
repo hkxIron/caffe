@@ -5,4 +5,3 @@ cd $CAFFE_HOME
     data/ilsvrc12/imagenet_mean.binaryproto \
     data/ilsvrc12/synset_words.txt \
     examples/images/cat.jpg
-

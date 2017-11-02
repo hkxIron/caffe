@@ -6,7 +6,7 @@
 
 namespace caffe {
 
-template<typename T>
+template <typename T>
 class BlockingQueue {
  public:
   explicit BlockingQueue();
@@ -32,12 +32,12 @@ class BlockingQueue {
    to avoid a boost/NVCC issues (#1009, #1010) on OSX. Also fails on
    Linux CUDA 7.0.18.
    */
-  class sync;
+  class sync;  // 类声明，而非定义
 
   std::queue<T> queue_;
   shared_ptr<sync> sync_;
 
-DISABLE_COPY_AND_ASSIGN(BlockingQueue);
+  DISABLE_COPY_AND_ASSIGN(BlockingQueue);
 };
 
 }  // namespace caffe
